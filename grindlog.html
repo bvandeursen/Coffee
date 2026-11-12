@@ -58,6 +58,28 @@ svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-widt
 .tile:not(.wide) .step{width:34px;height:40px;font-size:20px}
 .tile:not(.wide) .num input{font-size:22px;letter-spacing:-.02em}
 input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+.tile.opt{cursor:pointer}
+.tile:not(.wide) .lab{font-size:11px;letter-spacing:.03em;gap:5px;white-space:nowrap}
+.tile.opt .lab .tog{margin-left:auto;width:30px;height:18px;border-radius:9px;background:var(--line);position:relative;flex:none;transition:background .15s}
+.tile.opt .lab .tog::after{content:"";position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:var(--surface);transition:transform .15s}
+.tile.opt.on .lab .tog{background:var(--accent)}
+.tile.opt.on .lab .tog::after{transform:translateX(12px)}
+.tile.off{background:transparent;border-style:dashed}
+.tile.off .row{display:none}
+.tile .offv{display:none;font-family:var(--f-mono);font-size:13px;color:var(--muted);text-align:center;height:40px;line-height:40px}
+.tile.off .offv{display:block}
+.actions.three{grid-template-columns:1fr 1fr 1fr}
+.actions.three .btn{flex-direction:column;gap:2px;height:60px;font-size:13px;padding:0 6px}
+.hcard{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.hcard .top{display:flex;gap:12px;align-items:center}
+.hcard .top .t{min-width:0;flex:1}
+.hcard .brand{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hcard .name{font-weight:600;font-size:16px}
+.best{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 10px;border-radius:10px;background:var(--sunk);font-family:var(--f-mono);font-size:13px;font-variant-numeric:tabular-nums}
+.best .tag{font-family:var(--f-body);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.best b{font-weight:600}
+.rev{font-size:13px;color:var(--muted);line-height:1.45;border-left:2px solid var(--line);padding-left:8px}
+.more{border:0;background:none;color:var(--accent);font-weight:600;font-size:13px;padding:4px 0;text-align:left}
 .ticks{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted);padding:0 2px}
 
 /* extraction */
@@ -165,6 +187,7 @@ textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:
   <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></symbol>
   <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1 1.5 2 2 3 .5-3 0-5.5 1-8z"/></symbol>
   <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></symbol>
+  <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></symbol>
 </svg>
 
@@ -184,9 +207,10 @@ textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:
 
   <button class="btn primary save" id="saveBtn" type="button"><svg class="i"><use href="#i-drop"/></svg>Log Shot</button>
 
-  <div class="actions">
+  <div class="actions three">
     <button class="btn" id="rateBtn" type="button"><svg class="i"><use href="#i-star"/></svg>Rate Coffee</button>
     <button class="btn" id="changeBtn" type="button"><svg class="i"><use href="#i-swap"/></svg>Change Coffee</button>
+    <button class="btn" id="histBtn" type="button"><svg class="i"><use href="#i-history"/></svg>History</button>
   </div>
 
   <section class="hist" aria-label="Recent shots">
@@ -227,6 +251,16 @@ textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:
   </div>
 </section>
 
+<!-- History sheet -->
+<section class="sheet" id="histSheet" hidden aria-label="History">
+  <div class="sheet-h"><h2>History</h2><button class="icon-btn" data-close aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="wrap">
+    <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="hq" type="search" placeholder="Search brand, type or origin" aria-label="Search history"></div>
+    <div class="chips" id="hChips"></div>
+    <div class="clist" id="hlist"></div>
+  </div>
+</section>
+
 <!-- New coffee sheet -->
 <section class="sheet" id="newSheet" hidden aria-label="New coffee">
   <div class="sheet-h"><h2>New Coffee</h2><button class="icon-btn" data-close aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></div>
@@ -258,10 +292,10 @@ const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 
 const FIELDS = [
   {k:'grindSize', label:'Grind Size', unit:'', step:1, min:1, max:60, dec:0, icon:'dial', wide:true, def:20},
-  {k:'grindTime', label:'Grind Time', unit:'s', step:0.1, min:0, max:99.9, dec:1, icon:'timer', def:12.0},
-  {k:'dose', label:'Grind Amount', unit:'g', step:0.1, min:0, max:40, dec:1, icon:'scale', def:18.0},
+  {k:'grindTime', label:'Grind Time', unit:'s', step:0.1, min:0, max:99.9, dec:1, icon:'timer', def:12.0, opt:true},
+  {k:'dose', label:'Grind Amount', unit:'g', step:0.1, min:0, max:40, dec:1, icon:'scale', def:18.0, opt:true},
   {k:'shotTime', label:'Shot Time', unit:'s', step:1, min:0, max:99, dec:0, icon:'drop', def:28},
-  {k:'pressure', label:'Pressure', unit:'bar', step:0.5, min:0, max:15, dec:1, icon:'gauge', def:9.0},
+  {k:'pressure', label:'Pressure', unit:'bar', step:0.5, min:0, max:15, dec:1, icon:'gauge', def:9.0, opt:true},
 ];
 
 const S = {
@@ -271,6 +305,8 @@ const S = {
   vals: Object.fromEntries(FIELDS.map(f => [f.k, f.def])),
   balance: 0, dirty: false, stars: 0, brand: null, expanded: null,
   draft: null,
+  on: Object.assign({grindTime:false, dose:false, pressure:false}, lsGet('gl.on') || {}),
+  hq: '', hBrand: null, hOpen: {},
 };
 
 /* ---------- dials ---------- */
@@ -278,8 +314,9 @@ const fmt = (f, v) => Number(v).toFixed(f.dec);
 const clamp = (f, v) => Math.min(f.max, Math.max(f.min, Math.round(v / f.step) * f.step));
 function buildDials() {
   $('#dials').innerHTML = FIELDS.map(f => `
-    <div class="tile${f.wide ? ' wide' : ''}">
-      <div class="lab">${ico(f.icon)}${f.label}</div>
+    <div class="tile${f.wide ? ' wide' : ''}${f.opt ? ' opt' : ''}" id="t-${f.k}"${f.opt ? ` role="switch" tabindex="0" aria-label="${f.label} on/off"` : ''}>
+      <div class="lab">${ico(f.icon)}${f.label}${f.opt ? '<span class="tog"></span>' : ''}</div>
+      ${f.opt ? '<div class="offv">Off</div>' : ''}
       <div class="row">
         <button class="step" type="button" data-k="${f.k}" data-d="-1" aria-label="Decrease ${f.label}">−</button>
         <div class="num"><input id="v-${f.k}" inputmode="decimal" aria-label="${f.label}" autocomplete="off"><span class="unit">${f.unit}</span></div>
@@ -297,6 +334,13 @@ function buildDials() {
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
     const r = $('#r-' + f.k);
     if (r) r.addEventListener('input', () => setVal(f.k, +r.value));
+  });
+  // optional tiles: tap the box to toggle on/off
+  FIELDS.filter(f => f.opt).forEach(f => {
+    const t = $('#t-' + f.k);
+    const flip = () => { S.on[f.k] = !S.on[f.k]; lsSet('gl.on', S.on); paint(); };
+    t.addEventListener('click', e => { if (e.target.closest('.step, input')) return; flip(); });
+    t.addEventListener('keydown', e => { if (e.target === t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); flip(); } });
   });
   // press-and-hold repeat on steppers
   $('#dials').querySelectorAll('.step').forEach(b => {
@@ -318,6 +362,7 @@ function paint() {
     const inp = $('#v-' + f.k);
     if (document.activeElement !== inp) inp.value = fmt(f, S.vals[f.k]);
     const r = $('#r-' + f.k); if (r) r.value = S.vals[f.k];
+    if (f.opt) { const t = $('#t-' + f.k), on = !!S.on[f.k]; t.classList.toggle('on', on); t.classList.toggle('off', !on); t.setAttribute('aria-checked', on); }
   });
   $('#balance').value = S.balance;
   $('#balV').textContent = S.balance === 0 ? '0' : (S.balance > 0 ? '+' : '') + S.balance;
@@ -349,22 +394,34 @@ function renderBag() {
   $('#bagBtn').innerHTML = `${thumbHtml(c)}<div class="t"><div class="brand">${esc(c.brand || '—')}</div><div class="name">${esc(c.name || 'Coffee')}</div>
     <div class="meta">${d != null ? `<span>${ico('flame')}${d}d</span>` : ''}${c.origin ? `<span>${ico('pin')}${esc(c.origin)}</span>` : ''}${a != null ? `<span class="stars-s">${ico('star')}${a.toFixed(1)}</span>` : ''}</div></div>${ico('swap')}`;
 }
+const has = v => typeof v === 'number';
+function valsHtml(s) {
+  return `<span>#<b>${s.grindSize}</b></span>`
+    + (has(s.grindTime) ? `<span><b>${fmt(FIELDS[1], s.grindTime)}</b>s</span>` : '')
+    + (has(s.dose) ? `<span><b>${fmt(FIELDS[2], s.dose)}</b>g</span>` : '')
+    + (has(s.shotTime) ? `<span><b>${s.shotTime}</b>s</span>` : '')
+    + (has(s.pressure) ? `<span><b>${fmt(FIELDS[4], s.pressure)}</b>bar</span>` : '');
+}
+function loadShot(s) {
+  FIELDS.forEach(f => { if (has(s[f.k])) S.vals[f.k] = s[f.k]; if (f.opt) S.on[f.k] = has(s[f.k]); });
+  lsSet('gl.on', S.on); S.balance = s.balance ?? 0; S.dirty = true; paint();
+}
 function renderHist() {
   const list = (S.currentId ? shotsOf(S.currentId) : S.shots).slice(0, 8);
   if (!list.length) { $('#hist').innerHTML = `<div class="empty">No shots yet. Dial in and tap Log Shot.</div>`; return; }
   $('#hist').innerHTML = list.map(s => {
     const r = S.ratings.find(x => x.shotId === s.id);
     return `<div class="shot"><span class="when">${ago(s.createdAt)}</span>
-      <span class="vals"><span>#<b>${s.grindSize}</b></span><span><b>${fmt(FIELDS[1], s.grindTime)}</b>s</span><span><b>${fmt(FIELDS[2], s.dose)}</b>g</span><span><b>${s.shotTime}</b>s</span><span><b>${fmt(FIELDS[4], s.pressure)}</b>bar</span>${r ? `<span class="stars-s">★${r.stars}</span>` : ''}</span>
+      <span class="vals">${valsHtml(s)}${r ? `<span class="stars-s">★${r.stars}</span>` : ''}</span>
       <span class="row"><span class="dot" style="background:${balColor(s.balance)}" title="Extraction ${s.balance}"></span><button type="button" data-use="${esc(s.id)}" aria-label="Use these settings">${ico('swap')}</button></span></div>`;
   }).join('');
 }
 $('#hist').addEventListener('click', e => {
   const b = e.target.closest('[data-use]'); if (!b) return;
   const s = S.shots.find(x => x.id === b.dataset.use); if (!s) return;
-  FIELDS.forEach(f => S.vals[f.k] = s[f.k]); S.balance = s.balance ?? 0; S.dirty = true; paint(); toast('Settings loaded');
+  loadShot(s); toast('Settings loaded');
 });
-function render() { renderBag(); renderHist(); if (!$('#changeSheet').hidden) renderList(); }
+function render() { renderBag(); renderHist(); if (!$('#changeSheet').hidden) renderList(); if (!$('#histSheet').hidden) renderHistory(); }
 
 /* ---------- save shot ---------- */
 $('#saveBtn').addEventListener('click', async () => {
@@ -372,7 +429,8 @@ $('#saveBtn').addEventListener('click', async () => {
   if (!cur()) { toast('Pick a coffee first'); return openSheet('changeSheet'); }
   const btn = $('#saveBtn'); btn.disabled = true;
   try {
-    await S.db.collection('shots').add({ coffeeId: S.currentId, ...S.vals, balance: S.balance, createdAt: Date.now() });
+    const v = {}; FIELDS.forEach(f => v[f.k] = (!f.opt || S.on[f.k]) ? S.vals[f.k] : null);
+    await S.db.collection('shots').add({ coffeeId: S.currentId, ...v, balance: S.balance, createdAt: Date.now() });
     S.dirty = false; toast('Shot logged');
   } catch (e) { toast('Could not save: ' + (e.message || e.code)); }
   btn.disabled = false;
@@ -382,7 +440,7 @@ $('#changeBtn').addEventListener('click', () => openSheet('changeSheet'));
 $('#rateBtn').addEventListener('click', () => { if (!cur()) { toast('Pick a coffee first'); return openSheet('changeSheet'); } openRate(); });
 
 /* ---------- sheets ---------- */
-function openSheet(id) { document.querySelectorAll('.sheet').forEach(s => s.hidden = s.id !== id); if (id === 'changeSheet') renderList(); $('#' + id).scrollTop = 0; }
+function openSheet(id) { document.querySelectorAll('.sheet').forEach(s => s.hidden = s.id !== id); if (id === 'changeSheet') renderList(); if (id === 'histSheet') renderHistory(); $('#' + id).scrollTop = 0; }
 function closeSheets() { document.querySelectorAll('.sheet').forEach(s => s.hidden = true); stopDict(); }
 document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeSheets));
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheets(); });
@@ -391,7 +449,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheets(
 function openRate() {
   S.stars = 0; $('#review').value = lsGet('gl.draft') || ''; $('#live').textContent = '';
   const c = cur(), s = shotsOf(c.id)[0];
-  $('#rateCtx').textContent = `${c.brand ? c.brand + ' · ' : ''}${c.name}` + (s ? `  ·  #${s.grindSize} ${fmt(FIELDS[2], s.dose)}g ${s.shotTime}s` : '');
+  $('#rateCtx').textContent = `${c.brand ? c.brand + ' · ' : ''}${c.name}` + (s ? `  ·  #${s.grindSize}` + (has(s.dose) ? ` ${fmt(FIELDS[2], s.dose)}g` : '') + (has(s.shotTime) ? ` ${s.shotTime}s` : '') : '');
   paintStars(); openSheet('rateSheet');
 }
 function paintStars() {
@@ -441,7 +499,7 @@ async function polish(text, fromVoice) {
   const base = fromVoice && $('#review').value.trim() ? `Existing notes: ${$('#review').value.trim()}\n` : '';
   const prompt = `Turn this spoken or rough coffee tasting note into a short, natural review in English (2-4 sentences, first person, no headings, no emojis, keep every concrete detail, do not invent flavours). Reply with only the review text.
 Coffee: ${c.brand || ''} ${c.name || ''}${c.origin ? ', ' + c.origin : ''}.
-${s ? `Shot: grind size ${s.grindSize}, ${s.dose} g in, ${s.shotTime} s, ${s.pressure} bar, extraction feel ${s.balance} (negative = too coarse, positive = too fine).` : ''}
+${s ? `Shot: grind size ${s.grindSize}` + (has(s.dose) ? `, ${s.dose} g in` : '') + (has(s.shotTime) ? `, ${s.shotTime} s` : '') + (has(s.pressure) ? `, ${s.pressure} bar` : '') + `, extraction feel ${s.balance} (negative = too coarse, positive = too fine).` : ''}
 ${S.stars ? `Rating: ${S.stars}/5.` : ''}
 ${base}Note: ${text}`;
   const pb = $('#polishBtn'); pb.disabled = true; pb.innerHTML = `<span class="spin"></span>`;
@@ -500,6 +558,57 @@ $('#clist').addEventListener('click', async e => {
   }
 });
 function selectCoffee(id) { S.currentId = id; lsSet('gl.current', id); S.dirty = false; S.db?.doc('state/current').set({ coffeeId: id, at: Date.now() }).catch(() => {}); prefill(); render(); }
+
+/* ---------- history ---------- */
+$('#histBtn').addEventListener('click', () => openSheet('histSheet'));
+$('#hq').addEventListener('input', () => { S.hq = $('#hq').value; renderHistory(); });
+$('#hChips').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (!b) return; S.hBrand = S.hBrand === b.dataset.b ? null : b.dataset.b; renderHistory(); });
+const fdate = ts => new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' });
+function bestShot(id) {
+  // highest rated shot; else most recent "perfect" one; else latest
+  const sh = shotsOf(id); if (!sh.length) return null;
+  const rated = S.ratings.filter(r => r.coffeeId === id && r.shotId).map(r => ({ r, s: sh.find(x => x.id === r.shotId) })).filter(x => x.s)
+    .sort((a, b) => b.r.stars - a.r.stars || b.r.createdAt - a.r.createdAt);
+  if (rated.length) return { s: rated[0].s, why: '★' + rated[0].r.stars };
+  const perfect = sh.find(x => x.balance === 0);
+  return perfect ? { s: perfect, why: 'Perfect' } : { s: sh[0], why: 'Last' };
+}
+function renderHistory() {
+  const brands = [...new Set(S.coffees.map(c => c.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  $('#hChips').innerHTML = brands.map(b => `<button type="button" class="chip${S.hBrand === b ? ' on' : ''}" data-b="${esc(b)}">${esc(b)}</button>`).join('');
+  $('#hChips').hidden = brands.length < 2;
+  const q = S.hq.trim().toLowerCase();
+  const lastAt = id => shotsOf(id)[0]?.createdAt || id && S.coffees.find(c => c.id === id)?.createdAt || 0;
+  const list = S.coffees
+    .filter(c => !S.hBrand || c.brand === S.hBrand)
+    .filter(c => !q || [c.brand, c.name, c.origin, c.notes].join(' ').toLowerCase().includes(q))
+    .sort((a, b) => lastAt(b.id) - lastAt(a.id));
+  if (!list.length) { $('#hlist').innerHTML = `<div class="empty">${S.coffees.length ? 'No match.' : 'Nothing logged yet.'}</div>`; return; }
+  $('#hlist').innerHTML = list.map(c => {
+    const sh = shotsOf(c.id), a = avg(c.id), b = bestShot(c.id), open = S.hOpen[c.id];
+    const revs = ratingsOf(c.id).filter(r => r.review).sort((x, y) => y.createdAt - x.createdAt);
+    return `<div class="hcard">
+      <div class="top">${thumbHtml(c)}<div class="t"><div class="brand">${esc(c.brand || '—')}</div><div class="name">${esc(c.name || 'Coffee')}</div>
+        <div class="meta">${c.origin ? `<span>${ico('pin')}${esc(c.origin)}</span>` : ''}${a != null ? `<span class="stars-s">${ico('star')}${a.toFixed(1)}</span>` : ''}<span>${ico('drop')}${sh.length}</span>${sh[0] ? `<span>${ico('cal')}${fdate(sh[0].createdAt)}</span>` : ''}</div></div></div>
+      ${b ? `<div class="best"><span class="tag">${esc(b.why)}</span>${valsHtml(b.s)}<span class="dot" style="background:${balColor(b.s.balance)}"></span>
+        <button class="btn sm primary" style="margin-left:auto" type="button" data-hu="${esc(b.s.id)}">Use</button></div>` : `<div class="empty">No shots logged.</div>`}
+      ${revs[0] ? `<div class="rev">${esc(revs[0].review)}</div>` : ''}
+      ${sh.length > 1 || revs.length > 1 ? `<button class="more" type="button" data-ho="${esc(c.id)}">${open ? 'Hide' : 'All shots (' + sh.length + ')'}</button>` : ''}
+      ${open ? sh.map(s => { const r = S.ratings.find(x => x.shotId === s.id); return `<div class="shot"><span class="when">${fdate(s.createdAt)}</span>
+        <span class="vals">${valsHtml(s)}${r ? `<span class="stars-s">★${r.stars}</span>` : ''}</span>
+        <span class="row"><span class="dot" style="background:${balColor(s.balance)}"></span><button type="button" data-hu="${esc(s.id)}" aria-label="Use these settings">${ico('swap')}</button></span></div>${r?.review ? `<div class="rev">${esc(r.review)}</div>` : ''}`; }).join('') : ''}
+    </div>`;
+  }).join('');
+}
+$('#hlist').addEventListener('click', e => {
+  const o = e.target.closest('[data-ho]'), u = e.target.closest('[data-hu]');
+  if (o) { S.hOpen[o.dataset.ho] = !S.hOpen[o.dataset.ho]; renderHistory(); return; }
+  if (u) {
+    const s = S.shots.find(x => x.id === u.dataset.hu); if (!s) return;
+    if (s.coffeeId !== S.currentId) { selectCoffee(s.coffeeId); S.db?.doc('coffees/' + s.coffeeId).update({ lastUsed: Date.now() }).catch(() => {}); }
+    loadShot(s); render(); closeSheets(); toast('Settings loaded');
+  }
+});
 
 /* new coffee form */
 function openNew(draft) {
