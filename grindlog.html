@@ -1,0 +1,600 @@
+<title>Grind Log</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+/* Layout: one thumb-reach column; dial tiles up top, actions pinned at the bottom, sheets slide over. */
+:root{
+  --bg:#f3efe9; --surface:#fffdfa; --sunk:#e8e1d7; --line:#d9cfc2;
+  --ink:#2a1d15; --muted:#7b6a5c; --accent:#b8741a; --accent-ink:#fff8ee;
+  --coarse:#5f88a8; --fine:#a7553a; --good:#4f8a5b; --star:#d9a019;
+  --f-display:"Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#17110d; --surface:#221912; --sunk:#2d221a; --line:#3d2f24;
+  --ink:#f2e6d8; --muted:#a8937f; --accent:#e0a043; --accent-ink:#1d140d;
+  --coarse:#7fa9c9; --fine:#d77f5f; --good:#79b585; --star:#f0bb3a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#17110d; --surface:#221912; --sunk:#2d221a; --line:#3d2f24;
+  --ink:#f2e6d8; --muted:#a8937f; --accent:#e0a043; --accent-ink:#1d140d;
+  --coarse:#7fa9c9; --fine:#d77f5f; --good:#79b585; --star:#f0bb3a; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{background:var(--bg)}
+body{color:var(--ink);font-family:var(--f-body);font-size:15px;-webkit-tap-highlight-color:transparent}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+svg.i{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.wrap{max-width:520px;margin:0 auto;padding-block:12px 24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:12px}
+
+/* current coffee */
+.bag{display:flex;align-items:center;gap:12px;padding:10px 12px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);text-align:left;width:100%}
+.thumb{width:48px;height:48px;border-radius:10px;background:var(--sunk);flex:none;display:grid;place-items:center;overflow:hidden;color:var(--muted)}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.bag .t{min-width:0;flex:1}
+.bag .brand{font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bag .name{font-family:var(--f-display);font-weight:800;font-size:19px;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{display:flex;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:2px}
+.meta span{display:inline-flex;align-items:center;gap:3px}
+.meta svg.i{width:13px;height:13px}
+.stars-s{color:var(--star)}
+
+/* dial tiles */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tile{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:10px 10px 8px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.tile.wide{grid-column:1/-1}
+.lab{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.row{display:flex;align-items:center;gap:6px}
+.step{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--sunk);display:grid;place-items:center;font-size:22px;line-height:1;flex:none;touch-action:manipulation;user-select:none}
+.step:active{background:var(--line)}
+.num{flex:1;min-width:0;display:flex;align-items:baseline;justify-content:center;gap:2px}
+.num input{width:100%;min-width:0;border:0;background:transparent;text-align:center;font-family:var(--f-mono);font-weight:600;font-size:28px;font-variant-numeric:tabular-nums;padding:0}
+.num input:focus{outline:none;background:var(--sunk);border-radius:8px}
+.unit{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.tile:not(.wide) .row{gap:4px}
+.tile:not(.wide) .step{width:34px;height:40px;font-size:20px}
+.tile:not(.wide) .num input{font-size:22px;letter-spacing:-.02em}
+input[type=range]{width:100%;accent-color:var(--accent);height:28px}
+.ticks{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--muted);padding:0 2px}
+
+/* extraction */
+.bal{position:relative;padding:4px 0 0}
+.bal input{appearance:none;-webkit-appearance:none;height:34px;background:transparent;position:relative;z-index:1}
+.bal .track{position:absolute;left:0;right:0;top:17px;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--coarse),var(--good) 42%,var(--good) 58%,var(--fine))}
+.bal .mid{position:absolute;left:50%;top:10px;width:2px;height:24px;margin-left:-1px;background:var(--ink);opacity:.55;border-radius:1px}
+.bal input::-webkit-slider-runnable-track{height:34px;background:transparent}
+.bal input::-moz-range-track{background:transparent}
+.bal input::-webkit-slider-thumb{-webkit-appearance:none;width:30px;height:30px;margin-top:2px;border-radius:50%;background:var(--surface);border:3px solid var(--ink);box-shadow:0 1px 4px rgb(0 0 0 / .25)}
+.bal input::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:var(--surface);border:3px solid var(--ink)}
+.bal-l{display:flex;justify-content:space-between;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.bal-l span:first-child{color:var(--coarse)} .bal-l span:nth-child(2){color:var(--good)} .bal-l span:last-child{color:var(--fine)}
+.bal-v{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;border-radius:var(--r);border:1px solid var(--line);background:var(--surface);font-weight:600;font-size:15px;padding:0 14px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-size:16px}
+.btn.primary:disabled{opacity:.5}
+.btn.ghost{background:transparent}
+.btn.sm{height:40px;font-size:14px;border-radius:10px}
+.actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.save{width:100%}
+
+/* history */
+.hist{display:flex;flex-direction:column;gap:2px}
+.hist h3,.sheet h3{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:6px 0 4px}
+.shot{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 2px;border-top:1px solid var(--line);font-size:13px}
+.shot .when{color:var(--muted);font-size:12px;width:46px}
+.shot .vals{font-family:var(--f-mono);font-variant-numeric:tabular-nums;display:flex;gap:10px;flex-wrap:wrap}
+.shot .vals b{font-weight:600}
+.dot{width:12px;height:12px;border-radius:50%;flex:none}
+.shot button{border:0;background:none;color:var(--muted);padding:4px}
+.empty{color:var(--muted);font-size:13px;padding:8px 2px}
+
+/* sheets */
+.sheet{position:fixed;inset:0;z-index:20;background:var(--bg);overflow-y:auto;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);animation:up .18s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet-h{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;align-items:center;gap:8px;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line)}
+.sheet-h h2{font-family:var(--f-display);font-weight:800;font-size:20px;margin:0;flex:1}
+.icon-btn{width:40px;height:40px;border-radius:10px;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center}
+.sheet .wrap{gap:14px}
+
+.starrow{display:flex;justify-content:center;gap:6px}
+.starrow button{border:0;background:none;padding:4px;color:var(--line)}
+.starrow button.on{color:var(--star)}
+.starrow svg{width:44px;height:44px;fill:currentColor;stroke:none}
+textarea{width:100%;min-height:140px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface);padding:12px;resize:vertical;line-height:1.5}
+.mic{width:72px;height:72px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;margin:0 auto}
+.mic svg.i{width:30px;height:30px}
+.mic.rec{background:var(--fine);animation:pulse 1.2s ease-in-out infinite}
+@keyframes pulse{50%{box-shadow:0 0 0 12px rgb(167 85 58 / .18)}}
+@media (prefers-reduced-motion:reduce){.mic.rec{animation:none}}
+.live{text-align:center;font-size:13px;color:var(--muted);min-height:18px}
+.ctx{font-family:var(--f-mono);font-size:12px;color:var(--muted);text-align:center}
+
+.search{display:flex;align-items:center;gap:8px;height:46px;padding:0 12px;border:1px solid var(--line);border-radius:var(--r);background:var(--surface)}
+.search input{border:0;background:none;flex:1;min-width:0;outline:none}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chip{flex:none;height:32px;padding:0 12px;border-radius:16px;border:1px solid var(--line);background:var(--surface);font-size:13px}
+.chip.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.clist{display:flex;flex-direction:column;gap:8px}
+.citem{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden}
+.citem.cur{border-color:var(--accent)}
+.citem>button{display:flex;gap:12px;align-items:center;width:100%;padding:10px 12px;border:0;background:none;text-align:left}
+.citem .t{min-width:0;flex:1}
+.citem .brand{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.citem .name{font-weight:600;font-size:16px}
+.cexp{display:flex;gap:8px;align-items:flex-end;padding:0 12px 12px;flex-wrap:wrap}
+.field{display:flex;flex-direction:column;gap:4px;flex:1;min-width:140px}
+.field label{font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:flex;gap:6px;align-items:center}
+.field input{height:44px;border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:0 10px;min-width:0;width:100%}
+.form{display:flex;flex-wrap:wrap;gap:12px}
+.photo{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px;border:1.5px dashed var(--line);border-radius:var(--r);background:var(--surface);text-align:center;color:var(--muted);font-size:13px}
+.photo img{max-height:180px;border-radius:10px}
+.strength{display:flex;gap:6px}
+.strength button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--sunk);display:grid;place-items:center;color:var(--muted)}
+.strength button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.strength svg{width:16px;height:16px;fill:currentColor;stroke:none}
+
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;z-index:50;max-width:calc(100% - 32px)}
+.note{font-size:12px;color:var(--muted);text-align:center}
+.spin{width:18px;height:18px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-timer" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9.5 2h5M12 2v3"/></symbol>
+  <symbol id="i-dial" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/><path d="M12 3v3M21 12h-3M12 21v-3M3 12h3"/></symbol>
+  <symbol id="i-scale" viewBox="0 0 24 24"><rect x="3" y="14" width="18" height="6" rx="2"/><path d="M7 14a5 5 0 0 1 10 0M12 10V8"/></symbol>
+  <symbol id="i-drop" viewBox="0 0 24 24"><path d="M12 3c3.5 4.5 6 7.6 6 10.5a6 6 0 0 1-12 0C6 10.6 8.5 7.5 12 3z"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="M4 18a9 9 0 1 1 16 0"/><path d="M12 14l4-5"/><circle cx="12" cy="14" r="1.3"/></symbol>
+  <symbol id="i-balance" viewBox="0 0 24 24"><path d="M12 4v16M5 8h14M5 8l-3 6a3 3 0 0 0 6 0zM19 8l-3 6a3 3 0 0 0 6 0zM8 20h8"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3L2.9 9.5l6.3-.9z"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7"/></symbol>
+  <symbol id="i-camera" viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></symbol>
+  <symbol id="i-mic" viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></symbol>
+  <symbol id="i-stop" viewBox="0 0 24 24"><rect x="7" y="7" width="10" height="10" rx="1.5"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4-4"/></symbol>
+  <symbol id="i-bean" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="6.5" ry="9" transform="rotate(30 12 12)"/><path d="M8.5 18c3-3 1-9 7-12"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-6-5.5-6-11a6 6 0 0 1 12 0c0 5.5-6 11-6 11z"/><circle cx="12" cy="10" r="2"/></symbol>
+  <symbol id="i-flame" viewBox="0 0 24 24"><path d="M12 3c1 4 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2-5 1 1 1.5 2 2 3 .5-3 0-5.5 1-8z"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/><path d="M19 16l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z"/></symbol>
+  <symbol id="i-trash" viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></symbol>
+</svg>
+
+<main class="wrap" id="main">
+  <button class="bag" id="bagBtn" type="button" aria-label="Change coffee"></button>
+
+  <div class="grid" id="dials"></div>
+
+  <div class="tile wide">
+    <div class="lab"><svg class="i"><use href="#i-balance"/></svg>Extraction <span class="bal-v" id="balV" style="margin-left:auto"></span></div>
+    <div class="bal">
+      <div class="track"></div><div class="mid"></div>
+      <input type="range" id="balance" min="-5" max="5" step="1" value="0" aria-label="Extraction: coarse to fine">
+    </div>
+    <div class="bal-l"><span>Too coarse</span><span>Perfect</span><span>Too fine</span></div>
+  </div>
+
+  <button class="btn primary save" id="saveBtn" type="button"><svg class="i"><use href="#i-drop"/></svg>Log Shot</button>
+
+  <div class="actions">
+    <button class="btn" id="rateBtn" type="button"><svg class="i"><use href="#i-star"/></svg>Rate Coffee</button>
+    <button class="btn" id="changeBtn" type="button"><svg class="i"><use href="#i-swap"/></svg>Change Coffee</button>
+  </div>
+
+  <section class="hist" aria-label="Recent shots">
+    <h3>Recent shots</h3>
+    <div id="hist"><div class="empty">Loading…</div></div>
+  </section>
+  <p class="note" id="status"></p>
+</main>
+
+<!-- Rate sheet -->
+<section class="sheet" id="rateSheet" hidden aria-label="Rate coffee">
+  <div class="sheet-h"><h2>Rate Coffee</h2><button class="icon-btn" data-close aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="wrap">
+    <div class="ctx" id="rateCtx"></div>
+    <div class="starrow" id="stars"></div>
+    <button class="mic" id="micBtn" type="button" aria-label="Record review"><svg class="i"><use href="#i-mic"/></svg></button>
+    <div class="live" id="live"></div>
+    <textarea id="review" placeholder="Tasting notes"></textarea>
+    <div class="actions">
+      <button class="btn sm ghost" id="polishBtn" type="button"><svg class="i"><use href="#i-spark"/></svg>Polish</button>
+      <button class="btn sm primary" id="rateSave" type="button">Save Rating</button>
+    </div>
+  </div>
+</section>
+
+<!-- Change sheet -->
+<section class="sheet" id="changeSheet" hidden aria-label="Change coffee">
+  <div class="sheet-h"><h2>Change Coffee</h2><button class="icon-btn" data-close aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="wrap">
+    <div class="actions">
+      <label class="btn primary" for="photoIn" id="photoLbl"><svg class="i"><use href="#i-camera"/></svg>New Bag Photo</label>
+      <button class="btn" id="manualBtn" type="button"><svg class="i"><use href="#i-plus"/></svg>Add Manually</button>
+    </div>
+    <input type="file" id="photoIn" accept="image/*" capture="environment" hidden>
+    <div class="search"><svg class="i"><use href="#i-search"/></svg><input id="q" type="search" placeholder="Search brand or type" aria-label="Search coffees"></div>
+    <div class="chips" id="brandChips"></div>
+    <div class="clist" id="clist"></div>
+  </div>
+</section>
+
+<!-- New coffee sheet -->
+<section class="sheet" id="newSheet" hidden aria-label="New coffee">
+  <div class="sheet-h"><h2>New Coffee</h2><button class="icon-btn" data-close aria-label="Close"><svg class="i"><use href="#i-x"/></svg></button></div>
+  <div class="wrap">
+    <div class="photo" id="photoBox"></div>
+    <div class="form">
+      <div class="field"><label for="nBrand"><svg class="i"><use href="#i-bean"/></svg>Brand</label><input id="nBrand"></div>
+      <div class="field"><label for="nName"><svg class="i"><use href="#i-bean"/></svg>Type</label><input id="nName"></div>
+      <div class="field"><label for="nOrigin"><svg class="i"><use href="#i-pin"/></svg>Origin</label><input id="nOrigin"></div>
+      <div class="field"><label><svg class="i"><use href="#i-flame"/></svg>Strength</label><div class="strength" id="nStrength"></div></div>
+      <div class="field"><label for="nRoast"><svg class="i"><use href="#i-cal"/></svg>Roast Date</label><input id="nRoast" type="date"></div>
+      <div class="field"><label for="nPhoto"><svg class="i"><use href="#i-camera"/></svg>Photo Date</label><input id="nPhoto" type="date"></div>
+      <div class="field" style="flex-basis:100%"><label for="nNotes"><svg class="i"><use href="#i-spark"/></svg>Notes</label><input id="nNotes"></div>
+    </div>
+    <button class="btn primary" id="newSave" type="button">Save &amp; Use</button>
+  </div>
+</section>
+
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const $ = s => document.querySelector(s);
+const ico = (n, cls = 'i') => `<svg class="${cls}"><use href="#i-${n}"/></svg>`;
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today = () => new Date().toISOString().slice(0, 10);
+const lsGet = k => { try { return JSON.parse(localStorage.getItem(k)); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+const FIELDS = [
+  {k:'grindSize', label:'Grind Size', unit:'', step:1, min:1, max:60, dec:0, icon:'dial', wide:true, def:20},
+  {k:'grindTime', label:'Grind Time', unit:'s', step:0.1, min:0, max:99.9, dec:1, icon:'timer', def:12.0},
+  {k:'dose', label:'Grind Amount', unit:'g', step:0.1, min:0, max:40, dec:1, icon:'scale', def:18.0},
+  {k:'shotTime', label:'Shot Time', unit:'s', step:1, min:0, max:99, dec:0, icon:'drop', def:28},
+  {k:'pressure', label:'Pressure', unit:'bar', step:0.5, min:0, max:15, dec:1, icon:'gauge', def:9.0},
+];
+
+const S = {
+  db: null, sample: null, dict: null,
+  coffees: [], shots: [], ratings: [],
+  currentId: lsGet('gl.current'),
+  vals: Object.fromEntries(FIELDS.map(f => [f.k, f.def])),
+  balance: 0, dirty: false, stars: 0, brand: null, expanded: null,
+  draft: null,
+};
+
+/* ---------- dials ---------- */
+const fmt = (f, v) => Number(v).toFixed(f.dec);
+const clamp = (f, v) => Math.min(f.max, Math.max(f.min, Math.round(v / f.step) * f.step));
+function buildDials() {
+  $('#dials').innerHTML = FIELDS.map(f => `
+    <div class="tile${f.wide ? ' wide' : ''}">
+      <div class="lab">${ico(f.icon)}${f.label}</div>
+      <div class="row">
+        <button class="step" type="button" data-k="${f.k}" data-d="-1" aria-label="Decrease ${f.label}">−</button>
+        <div class="num"><input id="v-${f.k}" inputmode="decimal" aria-label="${f.label}" autocomplete="off"><span class="unit">${f.unit}</span></div>
+        <button class="step" type="button" data-k="${f.k}" data-d="1" aria-label="Increase ${f.label}">+</button>
+      </div>
+      ${f.wide ? `<input type="range" id="r-${f.k}" min="${f.min}" max="${f.max}" step="${f.step}" aria-label="${f.label} slider"><div class="ticks"><span>1</span><span>15</span><span>30</span><span>45</span><span>60</span></div>` : ''}
+    </div>`).join('');
+  FIELDS.forEach(f => {
+    const inp = $('#v-' + f.k);
+    inp.addEventListener('focus', () => inp.select());
+    inp.addEventListener('change', () => {
+      const n = parseFloat(inp.value.replace(',', '.'));
+      if (!isNaN(n)) setVal(f.k, n); else paint();
+    });
+    inp.addEventListener('keydown', e => { if (e.key === 'Enter') inp.blur(); });
+    const r = $('#r-' + f.k);
+    if (r) r.addEventListener('input', () => setVal(f.k, +r.value));
+  });
+  // press-and-hold repeat on steppers
+  $('#dials').querySelectorAll('.step').forEach(b => {
+    let t1, t2;
+    const f = FIELDS.find(x => x.k === b.dataset.k), d = +b.dataset.d;
+    const bump = () => setVal(f.k, S.vals[f.k] + d * f.step);
+    const stop = () => { clearTimeout(t1); clearInterval(t2); };
+    b.addEventListener('pointerdown', e => { e.preventDefault(); bump(); t1 = setTimeout(() => t2 = setInterval(bump, 70), 380); });
+    ['pointerup','pointerleave','pointercancel'].forEach(ev => b.addEventListener(ev, stop));
+    b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); bump(); } });
+  });
+}
+function setVal(k, v) {
+  const f = FIELDS.find(x => x.k === k);
+  S.vals[k] = +clamp(f, v).toFixed(f.dec); S.dirty = true; paint();
+}
+function paint() {
+  FIELDS.forEach(f => {
+    const inp = $('#v-' + f.k);
+    if (document.activeElement !== inp) inp.value = fmt(f, S.vals[f.k]);
+    const r = $('#r-' + f.k); if (r) r.value = S.vals[f.k];
+  });
+  $('#balance').value = S.balance;
+  $('#balV').textContent = S.balance === 0 ? '0' : (S.balance > 0 ? '+' : '') + S.balance;
+}
+$('#balance').addEventListener('input', e => { S.balance = +e.target.value; S.dirty = true; paint(); });
+
+/* ---------- derived ---------- */
+const cur = () => S.coffees.find(c => c.id === S.currentId) || null;
+const shotsOf = id => S.shots.filter(s => s.coffeeId === id);
+const ratingsOf = id => S.ratings.filter(r => r.coffeeId === id);
+const avg = id => { const r = ratingsOf(id); return r.length ? r.reduce((a, b) => a + b.stars, 0) / r.length : null; };
+const daysSince = d => d ? Math.floor((Date.now() - new Date(d + 'T00:00:00')) / 864e5) : null;
+const ago = ts => { const m = (Date.now() - ts) / 6e4; if (m < 60) return Math.max(1, Math.round(m)) + 'm'; if (m < 1440) return Math.round(m / 60) + 'h'; return Math.round(m / 1440) + 'd'; };
+const balColor = b => b === 0 ? 'var(--good)' : b < 0 ? 'var(--coarse)' : 'var(--fine)';
+
+function prefill() {
+  if (S.dirty) return;
+  const last = (S.currentId && shotsOf(S.currentId)[0]) || S.shots[0];
+  if (last) { FIELDS.forEach(f => { if (typeof last[f.k] === 'number') S.vals[f.k] = last[f.k]; }); S.balance = last.balance ?? 0; }
+  paint();
+}
+
+/* ---------- render main ---------- */
+function thumbHtml(c) { return `<div class="thumb">${c?.thumb ? `<img src="${esc(c.thumb)}" alt="">` : ico('bean')}</div>`; }
+function renderBag() {
+  const c = cur();
+  if (!c) { $('#bagBtn').innerHTML = `${thumbHtml(null)}<div class="t"><div class="brand">No coffee selected</div><div class="name">Add a coffee</div></div>${ico('swap')}`; return; }
+  const a = avg(c.id), d = daysSince(c.roastDate);
+  $('#bagBtn').innerHTML = `${thumbHtml(c)}<div class="t"><div class="brand">${esc(c.brand || '—')}</div><div class="name">${esc(c.name || 'Coffee')}</div>
+    <div class="meta">${d != null ? `<span>${ico('flame')}${d}d</span>` : ''}${c.origin ? `<span>${ico('pin')}${esc(c.origin)}</span>` : ''}${a != null ? `<span class="stars-s">${ico('star')}${a.toFixed(1)}</span>` : ''}</div></div>${ico('swap')}`;
+}
+function renderHist() {
+  const list = (S.currentId ? shotsOf(S.currentId) : S.shots).slice(0, 8);
+  if (!list.length) { $('#hist').innerHTML = `<div class="empty">No shots yet. Dial in and tap Log Shot.</div>`; return; }
+  $('#hist').innerHTML = list.map(s => {
+    const r = S.ratings.find(x => x.shotId === s.id);
+    return `<div class="shot"><span class="when">${ago(s.createdAt)}</span>
+      <span class="vals"><span>#<b>${s.grindSize}</b></span><span><b>${fmt(FIELDS[1], s.grindTime)}</b>s</span><span><b>${fmt(FIELDS[2], s.dose)}</b>g</span><span><b>${s.shotTime}</b>s</span><span><b>${fmt(FIELDS[4], s.pressure)}</b>bar</span>${r ? `<span class="stars-s">★${r.stars}</span>` : ''}</span>
+      <span class="row"><span class="dot" style="background:${balColor(s.balance)}" title="Extraction ${s.balance}"></span><button type="button" data-use="${esc(s.id)}" aria-label="Use these settings">${ico('swap')}</button></span></div>`;
+  }).join('');
+}
+$('#hist').addEventListener('click', e => {
+  const b = e.target.closest('[data-use]'); if (!b) return;
+  const s = S.shots.find(x => x.id === b.dataset.use); if (!s) return;
+  FIELDS.forEach(f => S.vals[f.k] = s[f.k]); S.balance = s.balance ?? 0; S.dirty = true; paint(); toast('Settings loaded');
+});
+function render() { renderBag(); renderHist(); if (!$('#changeSheet').hidden) renderList(); }
+
+/* ---------- save shot ---------- */
+$('#saveBtn').addEventListener('click', async () => {
+  if (!S.db) return toast('Storage not available');
+  if (!cur()) { toast('Pick a coffee first'); return openSheet('changeSheet'); }
+  const btn = $('#saveBtn'); btn.disabled = true;
+  try {
+    await S.db.collection('shots').add({ coffeeId: S.currentId, ...S.vals, balance: S.balance, createdAt: Date.now() });
+    S.dirty = false; toast('Shot logged');
+  } catch (e) { toast('Could not save: ' + (e.message || e.code)); }
+  btn.disabled = false;
+});
+$('#bagBtn').addEventListener('click', () => openSheet('changeSheet'));
+$('#changeBtn').addEventListener('click', () => openSheet('changeSheet'));
+$('#rateBtn').addEventListener('click', () => { if (!cur()) { toast('Pick a coffee first'); return openSheet('changeSheet'); } openRate(); });
+
+/* ---------- sheets ---------- */
+function openSheet(id) { document.querySelectorAll('.sheet').forEach(s => s.hidden = s.id !== id); if (id === 'changeSheet') renderList(); $('#' + id).scrollTop = 0; }
+function closeSheets() { document.querySelectorAll('.sheet').forEach(s => s.hidden = true); stopDict(); }
+document.querySelectorAll('[data-close]').forEach(b => b.addEventListener('click', closeSheets));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSheets(); });
+
+/* ---------- rate ---------- */
+function openRate() {
+  S.stars = 0; $('#review').value = lsGet('gl.draft') || ''; $('#live').textContent = '';
+  const c = cur(), s = shotsOf(c.id)[0];
+  $('#rateCtx').textContent = `${c.brand ? c.brand + ' · ' : ''}${c.name}` + (s ? `  ·  #${s.grindSize} ${fmt(FIELDS[2], s.dose)}g ${s.shotTime}s` : '');
+  paintStars(); openSheet('rateSheet');
+}
+function paintStars() {
+  $('#stars').innerHTML = [1,2,3,4,5].map(n => `<button type="button" class="${n <= S.stars ? 'on' : ''}" data-s="${n}" aria-label="${n} star${n > 1 ? 's' : ''}"><svg><use href="#i-star"/></svg></button>`).join('');
+}
+$('#stars').addEventListener('click', e => { const b = e.target.closest('[data-s]'); if (b) { S.stars = +b.dataset.s; paintStars(); } });
+$('#review').addEventListener('input', () => lsSet('gl.draft', $('#review').value));
+$('#rateSave').addEventListener('click', async () => {
+  if (!S.stars) return toast('Tap the stars first');
+  const c = cur(), s = shotsOf(c.id)[0];
+  try {
+    await S.db.collection('ratings').add({ coffeeId: c.id, shotId: s?.id || null, stars: S.stars, review: $('#review').value.trim(), createdAt: Date.now() });
+    lsSet('gl.draft', ''); closeSheets(); toast('Rating saved');
+  } catch (e) { toast('Could not save: ' + (e.message || e.code)); }
+});
+
+/* dictation -> polished review */
+let raw = '';
+function stopDict() { if (S.dict?.active()) S.dict.stop().catch(() => {}); }
+$('#micBtn').addEventListener('click', () => {
+  const d = S.dict;
+  if (!d) { toast('Voice not available here. Use your keyboard mic.'); return; }
+  if (d.active()) { d.stop().then(polishFromVoice).catch(() => {}); return; }
+  raw = '';
+  d.start({ language: 'en' }).catch(e => {
+    if (e.code === 'unavailable') d.start().catch(err => toast('Mic: ' + err.code));
+    else if (e.code !== 'stopped') toast(e.code === 'not_granted' ? 'Microphone blocked' : 'Mic: ' + e.code);
+  });
+});
+function wireDict(d) {
+  d.onState(({ state, reason }) => {
+    const on = state === 'listening' || state === 'starting';
+    $('#micBtn').classList.toggle('rec', on);
+    $('#micBtn').innerHTML = ico(on ? 'stop' : 'mic');
+    $('#live').textContent = state === 'listening' ? 'Listening…' : state === 'finishing' ? 'Finishing…' : $('#live').textContent;
+    if (state === 'idle' && reason === 'viewer_stopped') polishFromVoice();
+    if (state === 'idle' && !raw) $('#live').textContent = '';
+  });
+  d.onPartial(({ text }) => { if (text) $('#live').textContent = (raw + ' ' + text).trim().slice(-120); });
+  d.onFinal(({ text }) => { raw += text; $('#live').textContent = raw.trim().slice(-120); });
+}
+function polishFromVoice() { if (raw.trim()) polish(raw.trim(), true); }
+$('#polishBtn').addEventListener('click', () => { const t = $('#review').value.trim(); if (t) polish(t, false); else toast('Write or record something first'); });
+async function polish(text, fromVoice) {
+  if (!S.sample) { if (fromVoice) $('#review').value = text; return toast('Claude not available here'); }
+  const c = cur(), s = shotsOf(c.id)[0];
+  const base = fromVoice && $('#review').value.trim() ? `Existing notes: ${$('#review').value.trim()}\n` : '';
+  const prompt = `Turn this spoken or rough coffee tasting note into a short, natural review in English (2-4 sentences, first person, no headings, no emojis, keep every concrete detail, do not invent flavours). Reply with only the review text.
+Coffee: ${c.brand || ''} ${c.name || ''}${c.origin ? ', ' + c.origin : ''}.
+${s ? `Shot: grind size ${s.grindSize}, ${s.dose} g in, ${s.shotTime} s, ${s.pressure} bar, extraction feel ${s.balance} (negative = too coarse, positive = too fine).` : ''}
+${S.stars ? `Rating: ${S.stars}/5.` : ''}
+${base}Note: ${text}`;
+  const pb = $('#polishBtn'); pb.disabled = true; pb.innerHTML = `<span class="spin"></span>`;
+  $('#live').textContent = 'Writing review…';
+  try {
+    const r = await S.sample(prompt, { modelTier: 'quick', cache: false, onText: ({ text }) => { $('#review').value = text; } });
+    $('#review').value = r.text.trim(); lsSet('gl.draft', $('#review').value); raw = ''; $('#live').textContent = '';
+  } catch (e) {
+    if (fromVoice) $('#review').value = (base ? $('#review').value + ' ' : '') + text;
+    $('#live').textContent = ''; toast(e.code === 'rate_limited' ? 'Busy, try again shortly' : 'Claude: ' + (e.message || e.code));
+  }
+  pb.disabled = false; pb.innerHTML = `${ico('spark')}Polish`;
+}
+
+/* ---------- change coffee ---------- */
+$('#q').addEventListener('input', renderList);
+$('#brandChips').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (!b) return; S.brand = S.brand === b.dataset.b ? null : b.dataset.b; renderList(); });
+function renderList() {
+  const brands = [...new Set(S.coffees.map(c => c.brand).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+  $('#brandChips').innerHTML = brands.map(b => `<button type="button" class="chip${S.brand === b ? ' on' : ''}" data-b="${esc(b)}">${esc(b)}</button>`).join('');
+  $('#brandChips').hidden = brands.length < 2;
+  const q = $('#q').value.trim().toLowerCase();
+  const list = S.coffees
+    .filter(c => !S.brand || c.brand === S.brand)
+    .filter(c => !q || [c.brand, c.name, c.origin].join(' ').toLowerCase().includes(q))
+    .sort((a, b) => (b.lastUsed || b.createdAt || 0) - (a.lastUsed || a.createdAt || 0));
+  if (!list.length) { $('#clist').innerHTML = `<div class="empty">${S.coffees.length ? 'No match.' : 'No coffees yet. Snap a photo of your bag to add the first one.'}</div>`; return; }
+  $('#clist').innerHTML = list.map(c => {
+    const a = avg(c.id), n = shotsOf(c.id).length, open = S.expanded === c.id;
+    return `<div class="citem${c.id === S.currentId ? ' cur' : ''}">
+      <button type="button" data-x="${esc(c.id)}">${thumbHtml(c)}<div class="t"><div class="brand">${esc(c.brand || '—')}</div><div class="name">${esc(c.name || 'Coffee')}</div>
+      <div class="meta">${c.origin ? `<span>${ico('pin')}${esc(c.origin)}</span>` : ''}${c.roastDate ? `<span>${ico('flame')}${esc(c.roastDate)}</span>` : ''}${a != null ? `<span class="stars-s">${ico('star')}${a.toFixed(1)}</span>` : ''}<span>${ico('drop')}${n}</span></div></div></button>
+      ${open ? `<div class="cexp"><div class="field"><label for="rd-${esc(c.id)}">${ico('cal')}Roast Date</label><input type="date" id="rd-${esc(c.id)}" value="${esc(c.roastDate || '')}"></div>
+        <button class="btn sm primary" type="button" data-pick="${esc(c.id)}">Use</button>
+        <button class="btn sm ghost" type="button" data-del="${esc(c.id)}" aria-label="Delete coffee">${ico('trash')}</button></div>` : ''}
+    </div>`;
+  }).join('');
+}
+let delArm = null;
+$('#clist').addEventListener('click', async e => {
+  const x = e.target.closest('[data-x]'), p = e.target.closest('[data-pick]'), d = e.target.closest('[data-del]');
+  if (x) { S.expanded = S.expanded === x.dataset.x ? null : x.dataset.x; renderList(); return; }
+  if (p) {
+    const id = p.dataset.pick, rd = $('#rd-' + CSS.escape(id))?.value || null;
+    const c = S.coffees.find(c => c.id === id); const patch = { lastUsed: Date.now() };
+    if (rd && rd !== c.roastDate) patch.roastDate = rd;
+    selectCoffee(id); closeSheets();
+    S.db.doc('coffees/' + id).update(patch).catch(() => {});
+    return;
+  }
+  if (d) {
+    if (delArm !== d.dataset.del) { delArm = d.dataset.del; d.innerHTML = 'Delete?'; return; }
+    await S.db.doc('coffees/' + d.dataset.del).delete().catch(err => toast('Could not delete: ' + err.code));
+    if (S.currentId === d.dataset.del) selectCoffee(null);
+    delArm = null; S.expanded = null;
+  }
+});
+function selectCoffee(id) { S.currentId = id; lsSet('gl.current', id); S.dirty = false; S.db?.doc('state/current').set({ coffeeId: id, at: Date.now() }).catch(() => {}); prefill(); render(); }
+
+/* new coffee form */
+function openNew(draft) {
+  S.draft = draft;
+  $('#nBrand').value = draft.brand || ''; $('#nName').value = draft.name || ''; $('#nOrigin').value = draft.origin || '';
+  $('#nRoast').value = draft.roastDate || ''; $('#nPhoto').value = draft.photoDate || ''; $('#nNotes').value = draft.notes || '';
+  paintStrength(); paintPhoto(); openSheet('newSheet');
+}
+function paintStrength() {
+  $('#nStrength').innerHTML = [1,2,3,4,5].map(n => `<button type="button" class="${n <= (S.draft.strength || 0) ? 'on' : ''}" data-st="${n}" aria-label="Strength ${n}"><svg><use href="#i-bean"/></svg></button>`).join('');
+}
+$('#nStrength').addEventListener('click', e => { const b = e.target.closest('[data-st]'); if (b) { S.draft.strength = +b.dataset.st === S.draft.strength ? 0 : +b.dataset.st; paintStrength(); } });
+function paintPhoto() {
+  const d = S.draft;
+  $('#photoBox').innerHTML = d.busy ? `${d.preview ? `<img src="${d.preview}" alt="">` : ''}<span class="row"><span class="spin"></span>Reading the bag…</span>`
+    : d.preview ? `<img src="${d.preview}" alt="Coffee bag">${d.error ? `<span>${esc(d.error)}</span>` : ''}<label class="btn sm" for="photoIn">${ico('camera')}Retake</label>`
+    : `<label class="btn sm" for="photoIn">${ico('camera')}Add Photo</label>`;
+}
+$('#manualBtn').addEventListener('click', () => openNew({ photoDate: '', roastDate: '' }));
+$('#photoIn').addEventListener('change', async e => {
+  const file = e.target.files[0]; e.target.value = ''; if (!file) return;
+  const keep = $('#newSheet').hidden ? {} : collectForm();
+  const photoDate = new Date(file.lastModified || Date.now()).toISOString().slice(0, 10);
+  const big = await shrink(file, 1400, 0.85), small = await shrink(file, 220, 0.7);
+  const preview = URL.createObjectURL(big);
+  openNew({ ...keep, photoDate, preview, thumb: await toDataUrl(small), busy: !!S.sample });
+  if (!S.sample) { S.draft.error = 'Claude not available here, fill in by hand.'; paintPhoto(); return; }
+  try {
+    const r = await S.sample.json(`This photo shows a bag of coffee. Read the label and reply with only a JSON object:
+{"brand": string|null, "name": string|null (blend or coffee name, e.g. "Espresso Blend" or "Yirgacheffe"), "strength": integer 1-5|null (roast or intensity on the bag, map light=2 medium=3 dark=4-5, or the printed scale scaled to 5), "origin": string|null (country/region, comma separated if a blend), "roastDate": "YYYY-MM-DD"|null (only if a roast date is printed; if only a best-before date is shown, return null), "notes": string|null (printed tasting notes / process, short)}.
+Use null for anything not visible. Do not guess.`, { images: [big], modelTier: 'default' });
+    const d = S.draft; d.busy = false;
+    ['brand','name','origin','notes','roastDate'].forEach(k => { if (r?.[k] && !d[k]) d[k] = String(r[k]); });
+    if (r?.strength && !d.strength) d.strength = Math.max(1, Math.min(5, Math.round(r.strength)));
+    // existing match?
+    const m = S.coffees.find(c => norm(c.brand) === norm(d.brand) && norm(c.name) === norm(d.name) && d.brand);
+    if (m) d.matchId = m.id;
+    openNew(d);
+    if (m) toast('Known coffee, will update roast date');
+  } catch (err) { S.draft.busy = false; S.draft.error = err.code === 'not_granted' ? 'Allow Claude to read photos' : 'Could not read the label, fill in by hand.'; paintPhoto(); }
+});
+const norm = s => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+function collectForm() {
+  return { ...S.draft, brand: $('#nBrand').value.trim(), name: $('#nName').value.trim(), origin: $('#nOrigin').value.trim(),
+    roastDate: $('#nRoast').value || null, photoDate: $('#nPhoto').value || null, notes: $('#nNotes').value.trim() };
+}
+$('#newSave').addEventListener('click', async () => {
+  const d = collectForm();
+  if (!d.brand && !d.name) return toast('Add at least a brand or type');
+  const doc = { brand: d.brand, name: d.name, origin: d.origin, strength: d.strength || null, roastDate: d.roastDate, photoDate: d.photoDate, notes: d.notes, lastUsed: Date.now() };
+  if (d.thumb) doc.thumb = d.thumb;
+  try {
+    let id = d.matchId;
+    if (id) await S.db.doc('coffees/' + id).update(doc);
+    else { const ref = S.db.collection('coffees').doc(); id = ref.id || ref.path.split('/').pop(); await ref.set({ ...doc, createdAt: Date.now() }); }
+    selectCoffee(id); closeSheets(); toast('Coffee saved');
+  } catch (e) { toast('Could not save: ' + (e.message || e.code)); }
+});
+
+function shrink(file, max, q) {
+  return new Promise(res => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      c.toBlob(b => res(b || file), 'image/jpeg', q);
+    };
+    img.onerror = () => res(file); img.src = url;
+  });
+}
+const toDataUrl = b => new Promise(r => { const fr = new FileReader(); fr.onload = () => r(fr.result); fr.onerror = () => r(null); fr.readAsDataURL(b); });
+
+/* ---------- toast ---------- */
+let tt; function toast(m) { const t = $('#toast'); t.textContent = m; t.hidden = false; clearTimeout(tt); tt = setTimeout(() => t.hidden = true, 2200); }
+
+/* ---------- boot ---------- */
+buildDials(); paint(); render();
+(async () => {
+  const c = window.claude;
+  if (!c?.use) { $('#hist').innerHTML = `<div class="empty">Open this page in Claude to save shots.</div>`; return; }
+  const [db, sample, dict] = await Promise.all([c.use('db'), c.use('sample'), c.use('dictation')]);
+  S.sample = sample; S.dict = dict;
+  if (dict) wireDict(dict); else $('#micBtn').hidden = true;
+  if (sample) sample.limits().then(l => { if (!l.images) $('#photoLbl').title = 'Photo reading not available here'; }).catch(() => {});
+  if (!db) { $('#hist').innerHTML = `<div class="empty">Sign in to Claude to save shots.</div>`; return; }
+  S.db = db;
+  const timer = setTimeout(() => $('#status').textContent = 'Can’t reach storage yet. Data may be out of date.', 10000);
+  const ok = snap => { if (!snap.metadata?.fromCache) { clearTimeout(timer); $('#status').textContent = ''; } };
+  const fail = e => { clearTimeout(timer); $('#status').textContent = 'Storage error: ' + (e.message || e.code); };
+  const rows = snap => snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  db.collection('coffees').onSnapshot(s => { ok(s); S.coffees = rows(s); render(); }, fail);
+  db.collection('shots').orderBy('createdAt', 'desc').limit(500).onSnapshot(s => { ok(s); S.shots = rows(s); prefill(); render(); }, fail);
+  db.collection('ratings').onSnapshot(s => { S.ratings = rows(s); render(); }, fail);
+  db.doc('state/current').onSnapshot(s => { const v = s.data()?.coffeeId; if (v && v !== S.currentId) { S.currentId = v; lsSet('gl.current', v); S.dirty = false; prefill(); render(); } }, () => {});
+})();
+})();
+</script>
