@@ -292,9 +292,9 @@ const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } ca
 
 const FIELDS = [
   {k:'grindSize', label:'Grind Size', unit:'', step:1, min:1, max:60, dec:0, icon:'dial', wide:true, def:20},
-  {k:'grindTime', label:'Grind Time', unit:'s', step:0.1, min:0, max:99.9, dec:1, icon:'timer', def:12.0, opt:true},
+  {k:'grindTime', label:'Grind Time', unit:'s', step:0.1, min:0, max:99.9, dec:1, icon:'timer', def:12.0},
   {k:'dose', label:'Grind Amount', unit:'g', step:0.1, min:0, max:40, dec:1, icon:'scale', def:18.0, opt:true},
-  {k:'shotTime', label:'Shot Time', unit:'s', step:1, min:0, max:99, dec:0, icon:'drop', def:28},
+  {k:'shotTime', label:'Shot Time', unit:'s', step:1, min:0, max:99, dec:0, icon:'drop', def:28, opt:true},
   {k:'pressure', label:'Pressure', unit:'bar', step:0.5, min:0, max:15, dec:1, icon:'gauge', def:9.0, opt:true},
 ];
 
@@ -305,7 +305,7 @@ const S = {
   vals: Object.fromEntries(FIELDS.map(f => [f.k, f.def])),
   balance: 0, dirty: false, stars: 0, brand: null, expanded: null,
   draft: null,
-  on: Object.assign({grindTime:false, dose:false, pressure:false}, lsGet('gl.on') || {}),
+  on: Object.assign({shotTime:false, dose:false, pressure:false}, lsGet('gl.on') || {}),
   hq: '', hBrand: null, hOpen: {},
 };
 
